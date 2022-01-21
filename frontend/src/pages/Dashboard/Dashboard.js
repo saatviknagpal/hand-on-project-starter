@@ -10,7 +10,7 @@ function Dashboard() {
   async function loginUser(event) {
     event.preventDefault();
 
-    const response = await fetch("http://localhost:3000/api/login", {
+    const response = await fetch("http://localhost:1337/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -25,14 +25,12 @@ function Dashboard() {
     const data = await response.json();
 
     if (data.user) {
-      localStorage.setItem('token', data.user)
+      localStorage.setItem("token", data.user);
       alert("Login successful");
       window.location.href = "/";
     } else {
-      alert("Please check your email and password");
+      alert("Please check your username and password");
     }
-
-    console.log(data);
   }
   return (
     <>
