@@ -1,0 +1,114 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  .loginButton {
+    background: #142683;
+    color: white;
+    height: 3rem;
+    margin: 1.2rem;
+    margin-right: 4.5rem;
+    padding: 1rem;
+    padding-bottom: 2rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+}
+
+.mainPage {
+  width: 100%;
+  background: #fafafa;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .banner {
+    width: 85%;
+    display: flex;
+    border-radius: 50%;
+    justify-content: space-between;
+    margin-top: 3rem;
+    img {
+      object-fit: contain;
+      height: 100%;
+    }
+
+    .rightPart {
+      background-color: #c3e7fd;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      display: flex;
+      padding: 3.125rem 6.25rem;
+      align-items: center;
+      &::after {
+        content: " ";
+        height: 100%;
+        border-radius: 50%;
+        position: absolute;
+        background-color: #d3b4f6;
+        width: 12.5rem;
+        left: -6.25rem;
+        top: 0rem;
+      }
+
+      .r1 {
+        flex: 0.75;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 3.125rem;
+
+        .title {
+          color: #1e272e;
+          font-family: Bebas Neue;
+          font-size: xxx-large;
+          font-weight: bold;
+        }
+
+        .description {
+          font-size: xx-large;
+          font-family: DM Sans;
+          color: gray;
+        }
+      }
+
+      .viewButton {
+        flex: 0.15;
+        height: 2.5rem;
+        width: 8.75rem;
+        background-color: black;
+        color: white;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.subHead {
+  width: 90%;
+  font-family: DM Sans;
+  font-size: x-large;
+  font-weight: bold;
+  margin-top: 3.125rem;
+}
+
+.cardContainer {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  margin-left: 1rem;
+}
