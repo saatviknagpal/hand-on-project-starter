@@ -84,6 +84,9 @@ function Register() {
               />
               <input type="submit" value="Register" id="submit" />
             </form>
+            <div className="register">
+              Already have an account? <a className="redirect" href="/login">Login</a>
+            </div>
           </div>
         </div>
       </div>

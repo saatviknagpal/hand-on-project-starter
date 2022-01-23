@@ -65,7 +65,9 @@ function Marketplace() {
               <div className="title">BACKGROUND IMAGE REMOVER</div>
               <div className="description">100% automatic and free</div>
             </div>
-            <div className="viewButton">View App</div>
+            <Link to="remove-bg">
+              <div className="viewButton">View App</div>
+            </Link>
           </div>
         </div>
         <div className="subHead">All APIs</div>

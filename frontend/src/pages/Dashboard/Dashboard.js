@@ -70,6 +70,9 @@ function Dashboard() {
               />
               <input type="submit" value="Login" id="submit" />
             </form>
+            <div className="register">
+              Not a member? <a className="redirect" href="/register">Register now</a>
+            </div>
           </div>
         </div>
       </div>
