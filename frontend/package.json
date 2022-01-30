@@ -6,6 +6,8 @@
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^0.25.0",
+    "common-base64-downloader-react": "^1.0.7",
     "node-sass": "^7.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -41,5 +43,6 @@
     "eslint": "^8.6.0",
     "eslint-plugin-react": "^7.28.0",
     "prettier": "^2.5.1"
-  }
+  },
+  "proxy": "https://localhost:1337"
 }

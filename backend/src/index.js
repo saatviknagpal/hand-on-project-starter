@@ -4,6 +4,12 @@ const dotenv = require("dotenv");
 const User = require("./models/user.model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const fileUpload = require("express-fileupload");
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
+const path = require("path");
+
 dotenv.config();
 
 const app = express();
@@ -11,6 +17,8 @@ const cors = require("cors");
 
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload());
+app.use(express.static("public"));
 
 mongoose
   .connect(process.env.MONGODB_URL)
@@ -63,6 +71,51 @@ app.post("/api/login", async (req, res) => {
   } else {
     return res.json({ status: "error", user: false });
   }
+});
+
+app.post("/api/removebg", async (req, res) => {
+  if (req.files === null) {
+    return res.status(400).json({ msg: "No file uploaded" });
+  }
+  const file = req.files.file;
+  const localFile = "../frontend/public/uploads/" + file.name;
+  file.mv(localFile, function (err) {
+    if (err) return res.status(500).send(err);
+  });
+  const formData = new FormData();
+  formData.append("size", "auto");
+  formData.append(
+    "image_file",
+    fs.createReadStream(localFile),
+    path.basename(localFile),
+  );
+
+  axios({
+    method: "post",
+    url: "https://api.remove.bg/v1.0/removebg",
+    data: formData,
+    responseType: "arraybuffer",
+    headers: {
+      ...formData.getHeaders(),
+      "X-Api-Key": process.env.REMOVE_BG_API_KEY,
+    },
+    encoding: null,
+  })
+    .then((response) => {
+      if (response.status != 200)
+        return console.error("Error:", response.status, response.statusText);
+      fs.writeFileSync(
+        "../frontend/public/uploads/bg-removed.png",
+        response.data,
+      );
+      res.json({
+        fileName: file.name,
+        filePath: `/uploads/bg-removed.png`,
+      });
+    })
+    .catch((error) => {
+      return console.error("Request failed:", error);
+    });
 });
 
 app.listen(process.env.PORT, () => {
