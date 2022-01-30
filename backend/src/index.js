@@ -105,12 +105,12 @@ app.post("/api/removebg", async (req, res) => {
       if (response.status != 200)
         return console.error("Error:", response.status, response.statusText);
       fs.writeFileSync(
-        "../frontend/public/uploads/bg-removed.png",
+        "../frontend/public/uploads/bg-removed" + file.name,
         response.data,
       );
       res.json({
         fileName: file.name,
-        filePath: `/uploads/bg-removed.png`,
+        filePath: `/uploads/bg-removed` + file.name,
       });
     })
     .catch((error) => {
