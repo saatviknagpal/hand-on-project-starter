@@ -2,11 +2,14 @@
   color: #9eaab7;
 }
 
+.hide_nav{
+  display: none;
+}
 .dashboard {
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: calc(100vh - 10vh);
+  height: 100vh;
 }
 
 .left {

@@ -1,9 +1,13 @@
-import React, { useState } from "react";
-import Navbar from "../../components/Navbar/Navbar";
+import React, { useContext, useState } from "react";
 import userPic from "../../images/user_img.svg";
 import "./dashboard.scss";
+import { UserContext } from "../../App";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar/Navbar";
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const { dispatch } = useContext(UserContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -12,6 +16,7 @@ function Dashboard() {
 
     const response = await fetch("http://localhost:1337/api/login", {
       method: "POST",
+      credentials: 'include',
       headers: {
         "Content-Type": "application/json",
       },
@@ -25,11 +30,12 @@ function Dashboard() {
     const data = await response.json();
 
     if (data.user) {
-      localStorage.setItem("token", data.user);
+      localStorage.setItem("user", JSON.stringify(response.data));
+      dispatch({ type: "USER", payload: true });
       alert("Login successful");
-      window.location.href = "/";
+      navigate("/");
     } else {
-      alert("Please check your username and password");
+      alert("Invalid Credentials");
     }
   }
   return (
@@ -71,7 +77,10 @@ function Dashboard() {
               <input type="submit" value="Login" id="submit" />
             </form>
             <div className="register">
-              Not a member? <a className="redirect" href="/register">Register now</a>
+              Not a member?{" "}
+              <a className="redirect" href="/register">
+                Register now
+              </a>
             </div>
           </div>
         </div>

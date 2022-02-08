@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Coverpic from "../../images/coverpic.svg";
 import "./marketplace.scss";
 import ApiCard from "../../components/ApiCard/ApiCard";
@@ -6,45 +6,74 @@ import Navbar from "../../components/Navbar/Navbar";
 import { Link } from "react-router-dom";
 
 function Marketplace() {
+  const callMarketplace = async () => {
+    try {
+      const res = await fetch("/", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      console.log(data);
+
+      if (!res.status === 200) {
+        const error = new Error(res.error);
+        throw error;
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      callMarketplace();
+    };
+  }, []);
+
   let arr = [
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
     {
       src: Coverpic,
-      name: "Backgound Remove",
+      name: "Background Remove",
       desc: "The description of the API in quick brief and we will truncate it here.",
     },
   ];
@@ -53,9 +82,6 @@ function Marketplace() {
     <>
       <div className="nav">
         <Navbar />
-        <Link to="login">
-          <button className="loginButton">Login/Signup</button>
-        </Link>
       </div>
       <div className="mainPage">
         <div className="banner">

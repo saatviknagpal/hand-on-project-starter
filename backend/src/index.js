@@ -2,20 +2,25 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const User = require("./models/user.model");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const fileUpload = require("express-fileupload");
 const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
+const authenticate = require("./middlewares/authenticate");
 
 dotenv.config();
 
 const app = express();
 const cors = require("cors");
+const corsConfig = {
+  credentials: true,
+  origin: true,
+};
 
-app.use(cors());
+app.use(cors(corsConfig));
 app.use(express.json());
 app.use(fileUpload());
 app.use(express.static("public"));
@@ -28,6 +33,10 @@ mongoose
   .catch((err) => {
     console.log("Error connecting to MongoDB: ", err.message);
   });
+
+app.get("/", authenticate, (req, res) => {
+  res.send(req.rootUser);
+});
 
 app.post("/api/register", async (req, res) => {
   console.log(req.body);
@@ -50,7 +59,7 @@ app.post("/api/login", async (req, res) => {
   });
 
   if (!user) {
-    return { status: "error", error: "Invalid login" };
+    return res.json({ status: "error", error: "Invalid login" });
   }
 
   const isPasswordValid = await bcrypt.compare(
@@ -59,14 +68,12 @@ app.post("/api/login", async (req, res) => {
   );
 
   if (isPasswordValid) {
-    const token = jwt.sign(
-      {
-        name: user.name,
-        email: user.email,
-      },
-      "secret123",
-    );
-
+    const token = await user.generateAuthToken();
+    console.log(token);
+    res.cookie("jwtoken", token, {
+      expires: new Date(Date.now() + 2589200000), //cookie expires in 30 days
+      httpOnly: true,
+    });
     return res.json({ status: "ok", user: token });
   } else {
     return res.json({ status: "error", user: false });
