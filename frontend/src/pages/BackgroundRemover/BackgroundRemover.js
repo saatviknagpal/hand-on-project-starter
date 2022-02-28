@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import coverpic from "../../images/coverpic.svg";
 import uploadpic from "../../images/upload.svg";
@@ -6,46 +6,33 @@ import axios from "axios";
 import "./remover.scss";
 
 function BackgroundRemover() {
-  const [file, setFile] = useState("");
-  const [filename, setFilename] = useState("Choose Image");
-  const [uploadedFile, setUploadedFile] = useState({});
-  const [style, setStyle] = useState("pictureContainer");
+  const fileInputRef = useRef();
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [bgRemovedImage, setBgRemovedImage] = useState("");
 
-  const onChange = (e) => {
-    setFile(e.target.files[0]);
-    setFilename(e.target.files[0].name);
-  };
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await axios.post(
-        "http://localhost:1337/api/removebg",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      const { fileName, filePath } = res.data;
-      setUploadedFile({ fileName, filePath });
-    } catch (err) {
-      if (err.response.status === 500) {
-        console.log("There was a problem with the server");
-      } else {
-        console.log(err.response.data.msg);
-      }
+  useEffect(() => {
+    if (bgRemovedImage) {
+      setPreview("data:image/png;base64," + bgRemovedImage);
+    } else if (image) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+        console.log(reader.result);
+        axios
+          .post("http://localhost:1337/upload", {
+            image: reader.result,
+          })
+          .then((res) => {
+            console.log(res.data.result_b64);
+            setBgRemovedImage(res.data.result_b64);
+          });
+      };
+      reader.readAsDataURL(image);
+    } else {
+      setPreview(null);
     }
-  };
-
-  const changeStyle = () => {
-    setStyle("invisible");
-    setFilename("Choose Image")
-  };
+  }, [image, bgRemovedImage]);
 
   return (
     <>
@@ -62,41 +49,82 @@ function BackgroundRemover() {
         </div>
         <div className="upload_pic">
           <div className="rightContainer">
-            {uploadedFile ? (
+            {preview ? (
               <div className="uploaded_pic">
                 <img
-                  style={{ width: "50%" }}
-                  src={uploadedFile.filePath}
+                  style={{ objectFit: "cover", maxWidth: "80%" }}
+                  src={preview}
                   alt=""
                 />
+                <button
+                  className="choose_img"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setImage(null);
+                    setBgRemovedImage(null);
+                  }}
+                >
+                  Remove Image
+                </button>
+                {bgRemovedImage && (
+                  <a
+                    href={`data:image/png;base64,${bgRemovedImage}`}
+                    download={"Image.png"}
+                    className="choose_img"
+                    style={{ textDecoration: "none" }}
+                  >
+                    Download Image
+                  </a>
+                )}
               </div>
-            ) : null}
-            <div className={style}>
-              <img src={uploadpic} alt="" className="gallery" />
-              <p className="instructions">
-              File should be png, jpg and less than 5mb
-            </p>
-            </div>
-            
-            <form onSubmit={onSubmit} className="form-group">
-              <div className="choose_img">
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/png, image/gif, image/jpeg"
-                  onChange={onChange}
-                />
-                <label htmlFor="file-upload">{filename}</label>
+            ) : (
+              <div>
+                <div className="pictureContainer">
+                  <img src={uploadpic} alt="" className="gallery" />
+                  <p className="instructions">
+                    File should be png, jpg and less than 5mb
+                  </p>
+                </div>
+
+                <form className="form-group">
+                  <input
+                    id="file-upload"
+                    type="file"
+                    ref={fileInputRef}
+                    style = {{display: "none"}}
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.target.files[0];
+                      if (file) {
+                        if (!file.type.includes("image")) {
+                          setImage(null);
+                          return alert("File format must be .jpg, .png, .jpeg");
+                        } else if (file.size > 4999999) {
+                          setImage(null);
+                          return alert("File size should be less than 5MB");
+                        } else {
+                          setImage(file);
+                        }
+                      } else {
+                        setImage(null);
+                      }
+                    }}
+                  />
+
+                  <input
+                    type="submit"
+                    value="Upload ->"
+                    className="choose_img"
+                    style={{ cursor: "pointer" }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      fileInputRef.current.click();
+                    }}
+                  />
+                  <p className="instructions">Or drop a file</p>
+                </form>
               </div>
-              <input
-                type="submit"
-                value="Upload ->"
-                className="choose_img"
-                style={{ cursor: "pointer" }}
-                onClick={changeStyle}
-              />
-              <p className="instructions">Or drop a file</p>
-            </form>
+            )}
           </div>
         </div>
       </div>

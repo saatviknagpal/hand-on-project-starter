@@ -2,14 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const User = require("./models/user.model");
-// const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const fileUpload = require("express-fileupload");
 const axios = require("axios");
 const FormData = require("form-data");
-const fs = require("fs");
-const path = require("path");
-const authenticate = require("./middlewares/authenticate");
+const { createTokens, validateToken } = require("./middlewares/authenticate");
+const API = require("./models/API");
 
 dotenv.config();
 
@@ -34,10 +32,7 @@ mongoose
     console.log("Error connecting to MongoDB: ", err.message);
   });
 
-app.get("/", authenticate, (req, res) => {
-  res.send(req.rootUser);
-});
-
+//REGISTER API
 app.post("/api/register", async (req, res) => {
   console.log(req.body);
   try {
@@ -47,15 +42,20 @@ app.post("/api/register", async (req, res) => {
       email: req.body.email,
       password: newPassword,
     });
-    res.json({ status: "ok" });
+    res.json({ status: "USER REGISTERED" });
   } catch (err) {
-    res.json({ status: "error", error: "Duplicate email" });
+    if (err) {
+      res.status(400).json({ error: err });
+    }
   }
 });
 
+//LOGIN API
+
 app.post("/api/login", async (req, res) => {
+  const { email } = req.body;
   const user = await User.findOne({
-    email: req.body.email,
+    email: email,
   });
 
   if (!user) {
@@ -68,62 +68,120 @@ app.post("/api/login", async (req, res) => {
   );
 
   if (isPasswordValid) {
-    const token = await user.generateAuthToken();
-    console.log(token);
-    res.cookie("jwtoken", token, {
-      expires: new Date(Date.now() + 2589200000), //cookie expires in 30 days
-      httpOnly: true,
-    });
-    return res.json({ status: "ok", user: token });
+    const accessToken = createTokens(user);
+
+    return res.json({ status: "ok", user: accessToken });
   } else {
     return res.json({ status: "error", user: false });
   }
 });
 
-app.post("/api/removebg", async (req, res) => {
-  if (req.files === null) {
-    return res.status(400).json({ msg: "No file uploaded" });
-  }
-  const file = req.files.file;
-  const localFile = "../frontend/public/uploads/" + file.name;
-  file.mv(localFile, function (err) {
-    if (err) return res.status(500).send(err);
-  });
+//BG REMOVER API
+
+app.post("/upload", async (req, res) => {
+  const { image } = req.body;
+  const imageData = image.substring(image.indexOf(",") + 1);
   const formData = new FormData();
   formData.append("size", "auto");
-  formData.append(
-    "image_file",
-    fs.createReadStream(localFile),
-    path.basename(localFile),
-  );
+  formData.append("image_file_b64", imageData);
 
   axios({
     method: "post",
     url: "https://api.remove.bg/v1.0/removebg",
     data: formData,
-    responseType: "arraybuffer",
     headers: {
       ...formData.getHeaders(),
       "X-Api-Key": process.env.REMOVE_BG_API_KEY,
+      Accept: "application/json",
     },
     encoding: null,
   })
     .then((response) => {
       if (response.status != 200)
         return console.error("Error:", response.status, response.statusText);
-      fs.writeFileSync(
-        "../frontend/public/uploads/bg-removed" + file.name,
-        response.data,
-      );
-      res.json({
-        fileName: file.name,
-        filePath: `/uploads/bg-removed` + file.name,
-      });
+      // console.log(response.data);
+      res.send(response.data.data);
     })
     .catch((error) => {
       return console.error("Request failed:", error);
     });
 });
+
+app.get("/auth", validateToken, (req, res) => {
+  res.json(req.user);
+});
+
+//CRUD API
+
+app.get("/api", async (req, res) => {
+  try {
+    const apis = await API.find();
+    res.json(apis);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/api/:id", getAPIs, (req, res) => {
+  res.json(res.api);
+});
+
+app.post("/api", async (req, res) => {
+  const api = new API({
+    name: req.body.name,
+    endPoint: req.body.endPoint,
+    description: req.body.description,
+  });
+
+  try {
+    const newAPI = await api.save();
+    res.status(201).json(newAPI);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.patch("/api/:id", getAPIs, async (req, res) => {
+  if (req.body.name != null) {
+    res.api.name = req.body.name;
+  }
+  if (req.body.endPoint != null) {
+    res.api.endPoint = req.body.endPoint;
+  }
+  if (req.body.description != null) {
+    res.api.description = req.body.description;
+  }
+
+  try {
+    const updatedAPI = await res.api.save();
+    res.json(updatedAPI);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+app.delete("/api/:id", getAPIs, async (req, res) => {
+  try {
+    await res.api.remove();
+    res.json({ message: "Deleted API" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+async function getAPIs(req, res, next) {
+  let api;
+  try {
+    api = await API.findById(req.params.id);
+    if (api == null) {
+      return res.status(404).json({ message: "Cannot find API" });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+  res.api = api;
+  next();
+}
 
 app.listen(process.env.PORT, () => {
   console.log(`Backend server is running on port ` + process.env.PORT);

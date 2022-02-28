@@ -26,7 +26,7 @@ function Register() {
 
     const data = await response.json();
 
-    if (data.status === "ok") {
+    if (data.status === "USER REGISTERED") {
       alert("Successfully registered");
       window.location.href = "/login";
     } else {

@@ -1,23 +1,40 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../../images/logo.svg";
 import "./navbar.scss";
 import { Link } from "react-router-dom";
-import { UserContext } from "../../App";
+
 import Modal from "../Modal/Modal";
+import axios from "axios";
 
 function Navbar() {
-  const { state } = useContext(UserContext);
   const [openModal, setOpenModal] = useState(false);
+  const [authState, setAuthState] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:1337/auth", {
+        headers: {
+          accessToken: localStorage.getItem("accessToken"),
+        },
+      })
+      .then((response) => {
+        if (response.data.error) {
+          setAuthState(false);
+        } else {
+          setAuthState(true);
+        }
+      });
+  }, []);
 
   const RenderMenu = () => {
-    if (state && window.location.pathname == "/") {
+    if ((authState && window.location.pathname == "/") || (window.location.pathname == "/apis")) {
       return (
         <>
           <div className="menu">
-            <Link to="apis" className="nav-link">
+            <Link to="/apis" className="nav-link">
               My APIs
             </Link>
-            <Link to="account" className="nav-link">
+            <Link to="/account" className="nav-link">
               My Account
             </Link>
             <button
@@ -28,7 +45,7 @@ function Navbar() {
             >
               +New API
             </button>
-            {openModal && <Modal closeModal={setOpenModal}/>}
+            {openModal && <Modal closeModal={setOpenModal} />}
           </div>
         </>
       );

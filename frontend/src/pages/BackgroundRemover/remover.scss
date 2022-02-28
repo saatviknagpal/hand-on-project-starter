@@ -88,6 +88,7 @@
       text-align: center;
       display: inline-block;
       margin-top: 1rem;
+      padding: 0.5rem;
     
       label {
         cursor: pointer;
@@ -99,6 +100,7 @@
     }
     .uploaded_pic{
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       margin-bottom: 2rem;

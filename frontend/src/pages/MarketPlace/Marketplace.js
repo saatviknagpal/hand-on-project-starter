@@ -4,29 +4,18 @@ import "./marketplace.scss";
 import ApiCard from "../../components/ApiCard/ApiCard";
 import Navbar from "../../components/Navbar/Navbar";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 function Marketplace() {
   const callMarketplace = async () => {
-    try {
-      const res = await fetch("/", {
-        method: "GET",
+    axios.post(
+      "http://localhost:1337/",
+      {
         headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
+          accessToken: localStorage.getItem("accessToken"),
         },
-        credentials: "include",
-      });
-
-      const data = await res.json();
-      console.log(data);
-
-      if (!res.status === 200) {
-        const error = new Error(res.error);
-        throw error;
-      }
-    } catch (err) {
-      console.log(err);
-    }
+      },
+    );
   };
 
   useEffect(() => {

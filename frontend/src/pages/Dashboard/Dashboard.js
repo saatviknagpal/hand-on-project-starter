@@ -16,7 +16,7 @@ function Dashboard() {
 
     const response = await fetch("http://localhost:1337/api/login", {
       method: "POST",
-      credentials: 'include',
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -29,8 +29,8 @@ function Dashboard() {
 
     const data = await response.json();
 
-    if (data.user) {
-      localStorage.setItem("user", JSON.stringify(response.data));
+    if (data.status === "ok") {
+      localStorage.setItem("accessToken", data.user);
       dispatch({ type: "USER", payload: true });
       alert("Login successful");
       navigate("/");
