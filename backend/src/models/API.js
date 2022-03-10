@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
-
+const { ObjectId } = mongoose.Schema.Types;
 const apiSchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
-    min: 2,
   },
   endPoint: {
     type: String,
@@ -13,7 +12,10 @@ const apiSchema = mongoose.Schema({
   description: {
     type: String,
     required: true,
-    min: 3,
+  },
+  postedBy: {
+    type: ObjectId,
+    ref: "UserData",
   },
 });
 

@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
-import logo from "../../images/logo.svg";
+import logo from "../../images/logo.png";
 import "./navbar.scss";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 import Modal from "../Modal/Modal";
 import axios from "axios";
 
 function Navbar() {
   const [openModal, setOpenModal] = useState(false);
   const [authState, setAuthState] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
       .get("http://localhost:1337/auth", {
         headers: {
-          accessToken: localStorage.getItem("accessToken"),
+          authorization: localStorage.getItem("accessToken"),
         },
       })
       .then((response) => {
@@ -26,15 +27,24 @@ function Navbar() {
       });
   }, []);
 
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    setAuthState(false);
+    navigate("/");
+  };
+
   const RenderMenu = () => {
-    if ((authState && window.location.pathname == "/") || (window.location.pathname == "/apis")) {
+    if (
+      (authState && window.location.pathname == "/") ||
+      (authState && window.location.pathname == "/apis")
+    ) {
       return (
         <>
           <div className="menu">
             <Link to="/apis" className="nav-link">
               My APIs
             </Link>
-            <Link to="/account" className="nav-link">
+            <Link to="/apis" className="nav-link">
               My Account
             </Link>
             <button
@@ -46,6 +56,7 @@ function Navbar() {
               +New API
             </button>
             {openModal && <Modal closeModal={setOpenModal} />}
+            <Icon icon="icon-park:logout" className="logout" onClick={logout} />
           </div>
         </>
       );

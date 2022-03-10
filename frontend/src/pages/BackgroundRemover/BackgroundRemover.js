@@ -20,7 +20,8 @@ function BackgroundRemover() {
         setPreview(reader.result);
         console.log(reader.result);
         axios
-          .post("http://localhost:1337/upload", {
+          // eslint-disable-next-line no-undef
+          .post(`${process.env.REACT_APP_BACKEND_URL}/upload`, {
             image: reader.result,
           })
           .then((res) => {
@@ -92,7 +93,7 @@ function BackgroundRemover() {
                     type="file"
                     ref={fileInputRef}
                     style = {{display: "none"}}
-                    accept="image/*"
+                    accept="image/jpeg, image/png"
                     onChange={(event) => {
                       const file = event.target.files[0];
                       if (file) {

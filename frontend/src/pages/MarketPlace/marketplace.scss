@@ -90,9 +90,11 @@
 
 .cardContainer {
   display: flex;
-  justify-content: space-evenly;
-  align-items: center;
   flex-wrap: wrap;
   margin-top: 1rem;
-  margin-left: 1rem;
+  gap: 1rem;
+  justify-content: center;
+  .edit{
+    display: none;
+  }
 }

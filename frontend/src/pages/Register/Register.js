@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React, { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import userPic from "../../images/user_img.svg";
@@ -11,24 +12,27 @@ function Register() {
   async function registerUser(event) {
     event.preventDefault();
 
-    const response = await fetch("http://localhost:1337/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/api/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
-    });
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      },
+    );
 
     const data = await response.json();
 
     if (data.status === "USER REGISTERED") {
       alert("Successfully registered");
-      window.location.href = "/login";
+      window.location.href = "/";
     } else {
       alert(data.error);
     }
@@ -85,7 +89,10 @@ function Register() {
               <input type="submit" value="Register" id="submit" />
             </form>
             <div className="register">
-              Already have an account? <a className="redirect" href="/login">Login</a>
+              Already have an account?{" "}
+              <a className="redirect" href="/login">
+                Login
+              </a>
             </div>
           </div>
         </div>

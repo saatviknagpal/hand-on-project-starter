@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React, { useContext, useState } from "react";
 import userPic from "../../images/user_img.svg";
 import "./dashboard.scss";
@@ -14,18 +15,21 @@ function Dashboard() {
   async function loginUser(event) {
     event.preventDefault();
 
-    const response = await fetch("http://localhost:1337/api/login", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/api/login`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      },
+    );
 
     const data = await response.json();
 
@@ -33,7 +37,7 @@ function Dashboard() {
       localStorage.setItem("accessToken", data.user);
       dispatch({ type: "USER", payload: true });
       alert("Login successful");
-      navigate("/");
+      navigate("/apis");
     } else {
       alert("Invalid Credentials");
     }

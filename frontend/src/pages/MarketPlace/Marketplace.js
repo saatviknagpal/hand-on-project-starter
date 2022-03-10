@@ -1,71 +1,22 @@
-import React, { useEffect } from "react";
+/* eslint-disable no-undef */
+import React, { useEffect, useState } from "react";
 import Coverpic from "../../images/coverpic.svg";
 import "./marketplace.scss";
 import ApiCard from "../../components/ApiCard/ApiCard";
 import Navbar from "../../components/Navbar/Navbar";
 import { Link } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 
 function Marketplace() {
-  const callMarketplace = async () => {
-    axios.post(
-      "http://localhost:1337/",
-      {
-        headers: {
-          accessToken: localStorage.getItem("accessToken"),
-        },
-      },
-    );
-  };
-
+  const [data, setData] = useState([]);
   useEffect(() => {
-    return () => {
-      callMarketplace();
-    };
+    fetch(`${process.env.REACT_APP_BACKEND_URL}/api`)
+      .then((res) => res.json())
+      .then((result) => {
+        console.log(result);
+        setData(result.apis);
+      });
   }, []);
-
-  let arr = [
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-    {
-      src: Coverpic,
-      name: "Background Remove",
-      desc: "The description of the API in quick brief and we will truncate it here.",
-    },
-  ];
 
   return (
     <>
@@ -87,12 +38,12 @@ function Marketplace() {
         </div>
         <div className="subHead">All APIs</div>
         <div className="cardContainer">
-          {arr.map((data, idx) => (
+          {data.map((data, idx) => (
             <ApiCard
               key={idx}
-              src={data.src}
               name={data.name}
-              desc={data.desc}
+              desc={data.description}
+              endPoint={data.endPoint}
             ></ApiCard>
           ))}
         </div>

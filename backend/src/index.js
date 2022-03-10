@@ -8,6 +8,12 @@ const axios = require("axios");
 const FormData = require("form-data");
 const { createTokens, validateToken } = require("./middlewares/authenticate");
 const API = require("./models/API");
+const Joi = require("joi");
+const validationSchema = Joi.object({
+  name: Joi.string().required().min(2),
+  endPoint: Joi.string().uri().required().allow(""),
+  description: Joi.string().required().min(3),
+});
 
 dotenv.config();
 
@@ -108,80 +114,120 @@ app.post("/upload", async (req, res) => {
 });
 
 app.get("/auth", validateToken, (req, res) => {
-  res.json(req.user);
+  res.json("Authentication Succesful");
 });
 
 //CRUD API
 
-app.get("/api", async (req, res) => {
-  try {
-    const apis = await API.find();
-    res.json(apis);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+app.get("/api", (req, res) => {
+  API.find()
+    .populate("postedBy", "_id name")
+    .then((apis) => {
+      res.json({ apis });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err.message });
+    });
 });
 
-app.get("/api/:id", getAPIs, (req, res) => {
-  res.json(res.api);
+app.get("/api/myapi", validateToken, (req, res) => {
+  API.find({ postedBy: req.user._id })
+    .populate("postedBy", "_id name")
+    .then((myapi) => {
+      res.json({ myapi });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err.message });
+    });
 });
 
-app.post("/api", async (req, res) => {
-  const api = new API({
-    name: req.body.name,
-    endPoint: req.body.endPoint,
-    description: req.body.description,
-  });
-
-  try {
-    const newAPI = await api.save();
-    res.status(201).json(newAPI);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+app.get("/api/myapi/:id", validateToken, (req, res) => {
+  API.findById(req.params.id)
+    .then((myapi) => {
+      res.json({ myapi });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: err.message });
+    });
 });
 
-app.patch("/api/:id", getAPIs, async (req, res) => {
-  if (req.body.name != null) {
-    res.api.name = req.body.name;
-  }
-  if (req.body.endPoint != null) {
-    res.api.endPoint = req.body.endPoint;
-  }
-  if (req.body.description != null) {
-    res.api.description = req.body.description;
-  }
+app.post("/api", validateToken, async (req, res) => {
+  const { error } = validationSchema.validate(req.body);
 
-  try {
-    const updatedAPI = await res.api.save();
-    res.json(updatedAPI);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-app.delete("/api/:id", getAPIs, async (req, res) => {
-  try {
-    await res.api.remove();
-    res.json({ message: "Deleted API" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-async function getAPIs(req, res, next) {
-  let api;
-  try {
-    api = await API.findById(req.params.id);
-    if (api == null) {
-      return res.status(404).json({ message: "Cannot find API" });
+  if (error) {
+    return res.send({
+      status: 400,
+      message: error.details[0].message,
+    });
+  } else {
+    const { name, endPoint, description } = req.body;
+    if (!name || !endPoint || !description) {
+      return res.status(422).json({ error: "Please add all the fields" });
     }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+    req.user.password = undefined;
+    const api = new API({
+      name: name,
+      endPoint: endPoint,
+      description: description,
+      postedBy: req.user,
+    });
+
+    try {
+      const newAPI = await api.save();
+      res.status(201).json({ newAPI, message: "API Added Successfully" });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
   }
-  res.api = api;
-  next();
-}
+});
+
+app.put("/api/update/:id", validateToken, async (req, res) => {
+  try {
+    let api = await API.findOne({ _id: req.params.id });
+
+    const { name, endPoint, description } = req.body;
+
+    if (!name && !endPoint && !description) {
+      return res.status(400).json({
+        message: "Edit some data to update API",
+      });
+    }
+
+    if (name) {
+      api.name = name;
+    }
+    if (endPoint) {
+      api.endPoint = endPoint;
+    }
+    if (description) {
+      api.description = description;
+    }
+
+    await api.save();
+    return res.status(200).json({
+      message: "Update Successful",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+});
+
+app.delete("/api/delete/:id", validateToken, (req, res) => {
+  API.findByIdAndDelete(req.params.id)
+    .then((api) => {
+      if (api) {
+        return res.status(404).send({ message: "API does not exist" });
+      }
+      res.send({ message: "Deleted Successfully" });
+    })
+    .catch((err) => {
+      return res.status(404).send({
+        message: "API not found" + err,
+      });
+    });
+});
 
 app.listen(process.env.PORT, () => {
   console.log(`Backend server is running on port ` + process.env.PORT);

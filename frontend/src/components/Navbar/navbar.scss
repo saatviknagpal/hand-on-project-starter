@@ -12,7 +12,9 @@
 
   .logo {
     padding: 1.2rem;
-    margin-left: 2rem;
+    width: 280px;
+    height: 50px;
+    object-fit: cover;
   }
   .nav {
     margin: 0.5rem;
@@ -26,6 +28,7 @@
       border-radius: 5px;
       font-weight: bold;
       cursor: pointer;
+      margin-right: 2.5rem;
     }
   }
   .menu{
@@ -33,7 +36,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 1rem;
-      margin-right: 4.5rem;
+      
       
       .nav-link{
           margin: 2rem;
@@ -48,6 +51,12 @@
         border-radius: 5px;
         font-weight: normal;
         cursor: pointer;
+      }
+      .logout{
+        margin-left: 1.2rem;
+        margin-right: 2rem;
+        cursor: pointer;
+        font-size: large;
       }
   }
 }
